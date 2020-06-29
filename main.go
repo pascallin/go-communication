@@ -14,5 +14,7 @@ func main() {
 	flag.Parse()
 	log.SetFlags(0)
 	http.HandleFunc("/echo", Controllers.Echo)
+	http.HandleFunc("/messages", Controllers.GetMessageList)
+	http.HandleFunc("/messengers", Controllers.GetMessengerList)
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
