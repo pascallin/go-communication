@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	Controllers "github.com/pascallin/go-communication/controllers"
+	"github.com/pascallin/go-communication/controllers"
 )
 
 func main() {
@@ -20,8 +20,8 @@ func main() {
 
 	flag.Parse()
 	log.SetFlags(0)
-	http.HandleFunc("/echo", Controllers.Echo)
-	http.HandleFunc("/messages", Controllers.GetMessageList)
-	http.HandleFunc("/messengers", Controllers.GetMessengerList)
+	http.HandleFunc("/communication", controllers.Communication)
+	http.HandleFunc("/messages", controllers.GetMessageList)
+	http.HandleFunc("/messengers", controllers.GetMessengerList)
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
