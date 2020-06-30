@@ -4,13 +4,20 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/joho/godotenv"
 	Controllers "github.com/pascallin/go-communication/controllers"
 )
 
-var addr = flag.String("addr", "localhost:8080", "http service address")
-
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	var addr = flag.String("addr", "localhost:"+os.Getenv("PORT"), "http service address")
+
 	flag.Parse()
 	log.SetFlags(0)
 	http.HandleFunc("/echo", Controllers.Echo)
