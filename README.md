@@ -6,15 +6,14 @@ communication
 
 ### set up dependency services
 
-1. familia
-
 ``` 
-docker run -d \
-    --name familia \
-    -e MODEL_NAME=news \
-    -p 5000:5000 \
-    orctom/familia
+docker-compose up -d
 ```
+
+including services:
+
+1. familia
+1. mongodb
 
 ### set up golang project
 

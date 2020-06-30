@@ -8,6 +8,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/pascallin/go-communication/controllers"
+	"github.com/pascallin/go-communication/databases"
 )
 
 func main() {
@@ -16,7 +17,15 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
+	// server address flag
 	var addr = flag.String("addr", "localhost:"+os.Getenv("PORT"), "http service address")
+
+	// connect mongodb
+	mongo, err := databases.NewMongoDatabase()
+	if err != nil {
+		panic(err)
+	}
+	defer mongo.Close()
 
 	flag.Parse()
 	log.SetFlags(0)

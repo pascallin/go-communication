@@ -5,8 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"github.com/pascallin/go-communication/providers"
-	"github.com/pascallin/go-communication/services"
+	"github.com/pascallin/go-communication/models"
+	"github.com/pascallin/go-communication/protocol"
+	"github.com/pascallin/go-communication/repositories"
 )
 
 var upgrader = websocket.Upgrader{
@@ -31,10 +32,16 @@ func Communication(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 		log.Printf("recv: %s", message)
-		// debug
-		providers.DispatchToProvider(1, providers.Payload{
-			KeyWords: services.TokenizeString(string(message)),
+		// insert message to mongo
+		data := protocol.Decode(message)
+		repositories.InsertMessage(&models.Message{
+			Author:  "pascal",
+			Message: data.Message,
 		})
+		// debug
+		// providers.DispatchToProvider(1, providers.Payload{
+		// 	KeyWords: services.TokenizeString(string(message)),
+		// })
 		err = c.WriteMessage(mt, message)
 		if err != nil {
 			log.Println("write:", err)

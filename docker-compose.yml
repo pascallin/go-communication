@@ -1,0 +1,16 @@
+version: "3"
+services:
+  familia:
+    image: orctom/familia
+    ports:
+      - "5000:5000"
+    environment:
+      - MODEL_NAME=news
+  # mongo:
+  #   image: mongo:3
+  #   restart: always
+  #   ports:
+  #     - 27017:27017
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: communicationService
+  #     MONGO_INITDB_ROOT_PASSWORD: _cs+__+
