@@ -7,7 +7,9 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/pascallin/go-communication/models"
 	"github.com/pascallin/go-communication/protocol"
+	"github.com/pascallin/go-communication/providers"
 	"github.com/pascallin/go-communication/repositories"
+	"github.com/pascallin/go-communication/services"
 )
 
 var upgrader = websocket.Upgrader{
@@ -39,13 +41,17 @@ func Communication(w http.ResponseWriter, r *http.Request) {
 			Message: data.Message,
 		})
 		// debug
-		// providers.DispatchToProvider(1, providers.Payload{
-		// 	KeyWords: services.TokenizeString(string(message)),
-		// })
+		providers.DispatchToProvider(1, providers.Payload{
+			KeyWords: services.TokenizeString(string(message)),
+		})
 		err = c.WriteMessage(mt, message)
 		if err != nil {
 			log.Println("write:", err)
 			break
 		}
+		repositories.InsertMessage(&models.Message{
+			Author:  "system",
+			Message: string(message),
+		})
 	}
 }

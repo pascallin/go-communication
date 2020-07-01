@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/pascallin/go-communication/databases"
@@ -14,16 +15,16 @@ import (
 
 var collectionName string = "messages"
 
-func GetMessages() []*models.Message {
+func GetMessages(page int64, pageSize int64) []*models.Message {
 	var results []*models.Message
 	ctx := context.Background()
 
+	// init condition
 	condition := bson.D{}
-
 	findOptions := options.Find()
-	findOptions.SetLimit(2)
-	//findOptions.SetSkip()
-	//findOptions.SetSort()
+	findOptions.SetLimit(pageSize)
+	findOptions.SetSkip(page * (pageSize - 1))
+	findOptions.SetSort(bson.D{{"timestamp", 1}})
 
 	cur, err := databases.MongoDB.DB.Collection(collectionName).Find(ctx, condition, findOptions)
 	if err != nil {
@@ -37,9 +38,12 @@ func GetMessages() []*models.Message {
 		var message models.Message
 		err := cur.Decode(&message)
 		if err != nil {
-			return nil
+			log.Fatal(err)
 		}
 		results = append(results, &message)
+	}
+	if err := cur.Err(); err != nil {
+		log.Fatal(err)
 	}
 	fmt.Printf("Found multiple documents (array of pointers): %+v\n", results)
 	return results

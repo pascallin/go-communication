@@ -1,9 +1,10 @@
 package controllers
 
 import (
-	"fmt"
-	"io/ioutil"
+	"encoding/json"
 	"net/http"
+
+	"github.com/pascallin/go-communication/repositories"
 )
 
 type Message struct {
@@ -18,16 +19,12 @@ type MessageData struct {
 }
 
 func GetMessageList(w http.ResponseWriter, r *http.Request) {
-	file, err := ioutil.ReadFile("datasources/message.json")
-	if err != nil {
-		fmt.Println(err)
-	}
-	// data := MessageData{}
-	// err := json.Unmarshal([]byte(file), &data)
+	// file, err := ioutil.ReadFile("datasources/message.json")
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
+	result := repositories.GetMessages(1, 20)
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(file))
+	json.NewEncoder(w).Encode(result)
 }
