@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/pascallin/go-communication/internal/pkg/databases"
 	"github.com/pascallin/go-communication/internal/pkg/protocol"
-	"github.com/pascallin/go-communication/internal/pkg/tokenize"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -25,14 +24,13 @@ func GetMessages(page int64, pageSize int64) []*Message {
 	condition := bson.D{}
 	findOptions := options.Find()
 	findOptions.SetLimit(pageSize)
-	findOptions.SetSkip(page * (pageSize - 1))
+	findOptions.SetSkip(pageSize * (page - 1))
 	findOptions.SetSort(bson.D{{"timestamp", 1}})
 
 	cur, err := databases.MongoDB.DB.Collection(collectionName).Find(ctx, condition, findOptions)
 	if err != nil {
 		return nil
 	}
-	fmt.Printf("cur: %+v\n", cur)
 	// Close the cursor once finished
 	defer cur.Close(ctx)
 	for cur.Next(ctx) {
@@ -47,7 +45,6 @@ func GetMessages(page int64, pageSize int64) []*Message {
 	if err := cur.Err(); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Found multiple documents (array of pointers): %+v\n", results)
 	return results
 }
 
@@ -94,10 +91,10 @@ func Communication(w http.ResponseWriter, r *http.Request) {
 			Author:  "pascal",
 			Message: data.Message,
 		})
-		// debug
-		DispatchToProvider(1, Payload{
-			KeyWords: tokenize.TokenizeString(string(message)),
-		})
+		// debug tokenize
+		//DispatchToProvider(1, Payload{
+		//	KeyWords: tokenize.TokenizeString(string(message)),
+		//})
 		err = c.WriteMessage(mt, message)
 		if err != nil {
 			log.Println("write:", err)

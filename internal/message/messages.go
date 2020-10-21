@@ -8,10 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type MessageData struct {
-	TempMessages []Message `json:"tempMessages"`
-}
-
 type Message struct {
 	ID        primitive.ObjectID `bson:"_id" json:"id"`
 	Author    string             `bson:"author" json:"author"`
@@ -30,10 +26,6 @@ func (t *Message) New() *Message {
 
 
 func GetMessageList(w http.ResponseWriter, r *http.Request) {
-	// file, err := ioutil.ReadFile("datasources/message.json")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
 	result := GetMessages(1, 20)
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
