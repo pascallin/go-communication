@@ -3,15 +3,18 @@ package message
 import (
 	"context"
 	"fmt"
-	"github.com/gorilla/websocket"
-	"github.com/pascallin/go-communication/internal/pkg/databases"
-	"github.com/pascallin/go-communication/internal/pkg/protocol"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/websocket"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/pascallin/go-communication/internal/pkg/databases"
+	"github.com/pascallin/go-communication/internal/pkg/protocol"
+	"github.com/pascallin/go-communication/internal/pkg/tokenize"
 )
 
 var collectionName string = "messages"
@@ -63,15 +66,13 @@ func InsertMessage(m *Message) *Message {
 	return m
 }
 
-var upgrader = websocket.Upgrader{
-	// CORS
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
 func Communication(w http.ResponseWriter, r *http.Request) {
-	c, err := upgrader.Upgrade(w, r, nil)
+	c, err := websocket.Upgrader{
+		// CORS
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
 		return
@@ -92,9 +93,9 @@ func Communication(w http.ResponseWriter, r *http.Request) {
 			Message: data.Message,
 		})
 		// debug tokenize
-		//DispatchToProvider(1, Payload{
-		//	KeyWords: tokenize.TokenizeString(string(message)),
-		//})
+		DispatchToProvider(1, Payload{
+			KeyWords: tokenize.TokenizeString(string(message)),
+		})
 		err = c.WriteMessage(mt, message)
 		if err != nil {
 			log.Println("write:", err)

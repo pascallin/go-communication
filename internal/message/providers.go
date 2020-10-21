@@ -2,13 +2,10 @@ package message
 
 import "fmt"
 
-// enum defind
 type ProviderType int
-
 const (
-	AutoMessage = 1
+	AutoMessage ProviderType = iota
 )
-
 func (p ProviderType) String() string {
 	return [...]string{"Message"}[p]
 }
