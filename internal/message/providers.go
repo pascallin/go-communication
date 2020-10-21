@@ -1,4 +1,4 @@
-package providers
+package message
 
 import "fmt"
 
@@ -23,7 +23,7 @@ func DispatchToProvider(pt ProviderType, p Payload) {
 		fmt.Println("AutoMessage", p.KeyWords)
 		break
 	default:
-		fmt.Println("waiting..")
+		fmt.Println("do nothing...")
 		break
 	}
 }

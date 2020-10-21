@@ -1,13 +1,15 @@
-package controllers
+package messenger
 
 import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path/filepath"
 )
 
 func GetMessengerList(w http.ResponseWriter, r *http.Request) {
-	file, err := ioutil.ReadFile("datasources/messenger.json")
+	filepath, err := filepath.Abs("./internal/pkg/datasources/messenger.json")
+	file, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		fmt.Println(err)
 	}

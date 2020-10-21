@@ -1,22 +1,24 @@
-package repositories
+package message
 
 import (
 	"context"
 	"fmt"
-	"log"
-	"time"
-
-	"github.com/pascallin/go-communication/databases"
-	"github.com/pascallin/go-communication/models"
+	"github.com/gorilla/websocket"
+	"github.com/pascallin/go-communication/internal/pkg/databases"
+	"github.com/pascallin/go-communication/internal/pkg/protocol"
+	"github.com/pascallin/go-communication/internal/pkg/tokenize"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
+	"net/http"
+	"time"
 )
 
 var collectionName string = "messages"
 
-func GetMessages(page int64, pageSize int64) []*models.Message {
-	var results []*models.Message
+func GetMessages(page int64, pageSize int64) []*Message {
+	var results []*Message
 	ctx := context.Background()
 
 	// init condition
@@ -35,7 +37,7 @@ func GetMessages(page int64, pageSize int64) []*models.Message {
 	defer cur.Close(ctx)
 	for cur.Next(ctx) {
 		// create a value into which the single document can be decoded
-		var message models.Message
+		var message Message
 		err := cur.Decode(&message)
 		if err != nil {
 			log.Fatal(err)
@@ -49,7 +51,7 @@ func GetMessages(page int64, pageSize int64) []*models.Message {
 	return results
 }
 
-func InsertMessage(m *models.Message) *models.Message {
+func InsertMessage(m *Message) *Message {
 	ctx := context.Background()
 
 	m.ID = primitive.NewObjectID()
@@ -62,4 +64,48 @@ func InsertMessage(m *models.Message) *models.Message {
 
 	fmt.Println("Inserted message: ", insertResult.InsertedID)
 	return m
+}
+
+var upgrader = websocket.Upgrader{
+	// CORS
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
+func Communication(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Print("upgrade:", err)
+		return
+	}
+	defer c.Close()
+	for {
+		mt, message, err := c.ReadMessage()
+		if err != nil {
+			log.Println("read:", err)
+
+			break
+		}
+		log.Printf("recv: %s", message)
+		// insert message to mongo
+		data := protocol.Decode(message)
+		InsertMessage(&Message{
+			Author:  "pascal",
+			Message: data.Message,
+		})
+		// debug
+		DispatchToProvider(1, Payload{
+			KeyWords: tokenize.TokenizeString(string(message)),
+		})
+		err = c.WriteMessage(mt, message)
+		if err != nil {
+			log.Println("write:", err)
+			break
+		}
+		InsertMessage(&Message{
+			Author:  "system",
+			Message: string(message),
+		})
+	}
 }
