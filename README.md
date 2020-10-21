@@ -22,5 +22,5 @@ including services:
 ### run cmd
 
 ``` 
-go run ./main.go
+go run ./cmd/main.go
 ```
